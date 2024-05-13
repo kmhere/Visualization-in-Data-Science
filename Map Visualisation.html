@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Code Comparison</title>
+</head>
+<body>
+    <h1>Product Code Comparison</h1>
+    <div id="result"></div>
+    <h2>Product Codes from products.csv</h2>
+    <ul id="productCodesList"></ul>
+    <h2>Product IDs from orders.csv</h2>
+    <ul id="productIDsList"></ul>
+
+    <script>
+        // Function to fetch data from a URL
+        async function fetchData(url) {
+            const response = await fetch(url);
+            const data = await response.text();
+            return data;
+        }
+
+        // Function to compare product codes
+        async function compareProductCodes() {
+            // Fetch product codes from products.csv
+            const productsData = await fetchData('https://raw.githubusercontent.com/JannesPeeters/DEAD/main/data/products.csv');
+            const productsLines = productsData.trim().split('\n');
+            const productCodes = productsLines.slice(1).map(line => line.split(',')[0]);
+
+            // Fetch product IDs from orders.csv
+            const ordersData = await fetchData('https://raw.githubusercontent.com/JannesPeeters/DEAD/main/data/orders.csv');
+            const ordersLines = ordersData.trim().split('\n');
+            const productIDs = ordersLines.slice(1).map(line => line.split(',')[6].split(';').map(item => item.trim())).flat();
+
+            // Compare product codes and product IDs
+            const commonProductCodes = productCodes.filter(code => productIDs.includes(code));
+
+            // Display result
+            const resultDiv = document.getElementById('result');
+            if (commonProductCodes.length > 0) {
+                resultDiv.textContent = 'Common product codes found: ' + commonProductCodes.join(', ');
+            } else {
+                resultDiv.textContent = 'No common product codes found.';
+            }
+
+            // Display product codes from products.csv
+            const productCodesList = document.getElementById('productCodesList');
+            productCodesList.innerHTML = productCodes.map(code => `<li>${code}</li>`).join('');
+
+            // Display product IDs from orders.csv
+            const productIDsList = document.getElementById('productIDsList');
+            productIDsList.innerHTML = productIDs.map(id => `<li>${id}</li>`).join('');
+        }
+
+        // Call the function to compare product codes when the page loads
+        compareProductCodes();
+    </script>
+</body>
+</html>
